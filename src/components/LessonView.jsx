@@ -131,7 +131,7 @@ export default function LessonView({ day, gameState, onClose }) {
     setIsLoading(true);
     setError(null);
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = await fetch('/api/lesson', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,12 +142,15 @@ export default function LessonView({ day, gameState, onClose }) {
         })
       });
       const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || `API error ${resp.status}`);
+      }
       const rawText = data.content?.map(b => b.text || '').join('') || '';
       const { lessonText, questions } = parseResponse(rawText);
       setLessonContent(lessonText);
       setQuizQuestions(questions);
     } catch (e) {
-      setError('Could not load lesson. Check your connection and try again.');
+      setError('Could not load lesson. Make sure ANTHROPIC_API_KEY is set in your Vercel environment variables, then redeploy.');
     }
     setIsLoading(false);
   }
