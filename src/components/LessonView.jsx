@@ -143,14 +143,15 @@ export default function LessonView({ day, gameState, onClose }) {
       });
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(data.error || `API error ${resp.status}`);
+        const detail = data.detail ? JSON.stringify(data.detail) : '';
+        throw new Error(`${data.error || `API error ${resp.status}`}${detail ? ': ' + detail : ''}`);
       }
       const rawText = data.content?.map(b => b.text || '').join('') || '';
       const { lessonText, questions } = parseResponse(rawText);
       setLessonContent(lessonText);
       setQuizQuestions(questions);
     } catch (e) {
-      setError('Could not load lesson. Make sure ANTHROPIC_API_KEY is set in your Vercel environment variables, then redeploy.');
+      setError(e.message || 'Could not load lesson. Check the browser console for details.');
     }
     setIsLoading(false);
   }
